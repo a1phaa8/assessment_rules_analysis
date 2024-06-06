@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<!--suppress XmlInvalidId -->
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assessment Rule Input</title>
+    <style>
+        /* Style for labels */
+        label {
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        /* Style for input fields */
+        input[type="date"],
+        input[type="number"],
+        select {
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 200px;
+        }
+        .error {
+        color: red;
+        }
+    </style>
+    <script>
+        function disableSubmitButton() {
+            document.getElementById("submit_btn").disabled = true;
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/habibmhamadi/multi-select-tag@2.0.1/dist/css/multi-select-tag.css">
+</head>
+<body>
+    <h1 style="text-align: center;">User Input for Assessment Rules</h1>
+    <form id="assessment_rule_form" action="/result" method="post" onsubmit = "disableSubmitButton()">
+        <label for="rule_selection" >Assessment Rule Selection:</label>
+        <select id="rule_selection" name="rule_selection[]" multiple>
+            <option value="ruleset1_V2_1_Fitness_VO2max_Fatness_BMI_rule">ruleset1_V2_1_Fitness_VO2max_Fatness_BMI_rule</option>
+            <option value="ruleset1_V2_1_Heart_Rate_Recovery_rule">ruleset1_V2_1_Heart_Rate_Recovery_rule</option>
+            <option value="ruleset2_V2_1_cad_risk_assessment_rule">ruleset2_V2_1_cad_risk_assessment_rule</option>
+            <option value="ruleset2_V2_1_diabetes_risk_assessment_rule">ruleset2_V2_1_diabetes_risk_assessment_rule</option>
+            <option value="ruleset2_V2_1_osa_risk_assessment_rule">ruleset2_V2_1_osa_risk_assessment_rule</option>
+            <option value="ruleset3_V2_1_emotional_variability_rule">ruleset3_V2_1_emotional_variability_rule</option>
+            <option value="ruleset4_V2_1_extreme_Heart_Rate_rule">ruleset4_V2_1_extreme_Heart_Rate_rule</option>
+            <option value="ruleset4_V2_1_extreme_Heart_Rate_Variability_rule">ruleset4_V2_1_extreme_Heart_Rate_Variability_rule</option>
+            <option value="ruleset4_V2_1_extreme_PRQ_rule">ruleset4_V2_1_extreme_PRQ_rule</option>
+            <option value="ruleset4_V3_1_extreme_DBP_rule">ruleset4_V3_1_extreme_DBP_rule</option>
+            <option value="ruleset4_V3_1_extreme_SBP_rule">ruleset4_V3_1_extreme_SBP_rule</option>
+            <option value="ruleset5_V3_1_progression_dbp_rule">ruleset5_V3_1_progression_dbp_rule</option>
+            <option value="ruleset5_V3_1_progression_hrv_rule">ruleset5_V3_1_progression_hrv_rule</option>
+            <option value="ruleset5_V3_1_progression_rhr_rule">ruleset5_V3_1_progression_rhr_rule</option>
+            <option value="ruleset5_V3_1_progression_sbp_rule">ruleset5_V3_1_progression_sbp_rule</option>
+            <option value="ruleset6_V3_1_combinatorial_hr_hrv_rule">ruleset6_V3_1_combinatorial_hr_hrv_rule</option>
+            <option value="ruleset6_V3_1_combinatorial_rules_SBP_DBP_rule">ruleset6_V3_1_combinatorial_rules_SBP_DBP_rule</option>
+            <option value="ruleset1_V4_cardio_respiratory_fitness_rule">ruleset1_V4_cardio_respiratory_fitness_rule</option>
+            <option value="ruleset2_V4_risk_clinical_risk_score_rule">ruleset2_V4_risk_clinical_risk_score_rule</option>
+            <option value="ruleset3_V4_emotional_influx_Stress_Disorder_rule">ruleset3_V4_emotional_influx_Stress_Disorder_rule</option>
+            <option value="ruleset3_V4_emotion_influx_anxiety_disorder_predictor_rule">ruleset3_V4_emotion_influx_anxiety_disorder_predictor_rule</option>
+            <option value="ruleset3_V4_emotion_influx_depression_early_symptom_rule">ruleset3_V4_emotion_influx_depression_early_symptom_rule</option><option value="ruleset5_V4_progression_resprate_rule">ruleset5_V4_progression_resprate_rule</option>
+            <option value="ruleset5_V4_progression_prq_rule">ruleset5_V4_progression_prq_rule</option>
+            <option value="ruleset6_V4_combinatorial_rules_PulsePressure_SBP_rule">ruleset6_V4_combinatorial_rules_PulsePressure_SBP_rule</option>
+            <option value="ruleset6_V4_combinatorial_rules_target_HR_rule">ruleset6_V4_combinatorial_rules_target_HR_rule</option>
+            <option value="ruleset6_V4_combinatorial_rules_cardiac_power_index_rule">ruleset6_V4_combinatorial_rules_cardiac_power_index_rule</option>
+        </select>
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+        <label for="start_date">Start Date:</label>
+        <input type="date" id="start_date" name="start_date" value=""/>
+        <br>
+        <br>
+
+        <label for="end_date">End Date:</label>
+        <input type="date" id="end_date" name="end_date" value=""/>
+        {% if error_date %}
+            <p class="error">{{ error_date }}</p>
+        {% endif %}
+        <br>
+        <br>
+        <label for="age_range">Age Range:</label>
+        <input type="number" id="age_range_min" name="age_range_min" min="1" max="99" /> to
+        <input type="number" id="age_range_max" name="age_range_max" min="1" max="99" />
+        {% if error_age %}
+            <p class="error">{{ error_age }}</p>
+        {% endif %}
+        <br>
+        <br>
+        <label for="bmi_range_min">BMI Range:</label>
+        <input type="number" id="bmi_range_min" name="bmi_range_min" step="0.01"/> to
+        <input type="number" id="bmi_range_max" name="bmi_range_max" step="0.01"/>
+        {% if error_bmi %}
+            <p class="error">{{ error_bmi }}</p>
+        {% endif %}
+        <br>
+        <br>
+
+        <label for="pop_type">Gender:</label>
+        <select id="pop_type" name="pop_type">
+            <option value="none">None</option>
+            <option value="all">All</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+        </select>
+        <br>
+        <br>
+        <label for="option_for_analysis">Statistical Analysis :</label>
+        <select id="option_for_analysis" name="option_for_analysis" multiple>
+            <option value="descriptive_stats">Descriptive</option>
+            <option value="visual_stats">Visual</option>
+        </select>
+        <br>
+
+        <input type="submit" id="submit_btn" value="Submit"/>
+    </form>
+
+
+    <script src="https://cdn.jsdelivr.net/gh/habibmhamadi/multi-select-tag@2.0.1/dist/js/multi-select-tag.js"></script>
+    <script>
+        new MultiSelectTag('rule_selection')  // id
+        new MultiSelectTag('option_for_analysis')  // id
+    </script>
+
+</body>
+</html>

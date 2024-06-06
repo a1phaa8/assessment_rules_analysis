@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Assessment Rules Results</title>
+    <style>
+        .image-container {
+            display: flex;
+        }
+
+        .image-container img {
+            margin-right: 10px; /* Add margin between images */
+        }
+        .center-underline {
+        text-align: center;
+        text-decoration: underline;
+        }
+        .center-text {
+        text-align: center;
+        }
+    </style>
+  </head>
+  <body>
+    <h1 style="text-align: center;">Assessment Rules Results</h1>
+    <table>
+      <tr>
+    <th style="text-align: left;">Rule(s) selected:</th>
+    <td id="rule_selection" style="text-align: left;">{{ rules }}</td>
+</tr>
+<tr>
+    <th style="text-align: left;">Gender selected:</th>
+    <td id="pop_type" style="text-align: left;">{{ data_type | title }}</td>
+</tr>
+<tr>
+    <th style="text-align: left;">Date Range:</th>
+    <td id="date_range" style="text-align: left;">
+        {% if warning_message %}
+            {{ date_range }}
+            <span style="color: red;">{{warning_message}}</span>
+        {% else %}
+            {{ date_range }}
+        {% endif %}
+    </td>
+</tr>
+<tr>
+    <th style="text-align: left;">Age Range:</th>
+    <td id="age_range" style="text-align: left;">
+        {% if age_warn %}
+            {{ age_range }}
+            <span style="color: red;">{{age_warn}}</span>
+        {% else %}
+            {{ age_range }}
+        {% endif %}
+    </td>
+</tr>
+<tr>
+    <th style="text-align: left;">BMI Range:</th>
+    <td id="bmi_range" style="text-align: left;">{{ BMI_range }}</td>
+</tr>
+    </table>
+    <br>
+    <br>
+    {% if 'descriptive_stats' in des_opt and 'visual_stats' in des_opt %}
+    <h2 class="center-underline">Descriptive Statistics and Graphical Analysis:</h2>
+        {% for sub_list in final_lst %}
+            <h2 class="center-text"> {{sub_list[5]}} </h2>
+            {{ sub_list[4][0] | safe }}
+            <div style="display: flex;">
+            {% for file_path in sub_list[0] %}
+                <img src="{{ url_for('static', filename='assessment_rules_graphs/' + sub_list[5] + '/' + file_path) }}" alt="Image" style="margin-right: 10px;">
+            {% endfor %}
+            </div>
+
+            {{ sub_list[4][1] | safe }}
+            <div style="display: flex;">
+            {% for file_path in sub_list[1] %}
+                <img src="{{ url_for('static', filename='assessment_rules_graphs/' + sub_list[5] + '/' + file_path) }}" alt="Image" style="margin-right: 10px;">
+            {% endfor %}
+            </div>
+
+            <div style="display: flex;">
+            {% for file_path in sub_list[2] %}
+                {% if file_path != "" %}
+                    <img src="{{ url_for('static', filename='assessment_rules_graphs/' + sub_list[5] + '/' + file_path) }}" alt="Image" style="margin-right: 10px;">
+                {% endif %}
+            {% endfor %}
+            </div>
+
+            <div style="display: flex; justify-content: center;">
+            {% for file_path in sub_list[3] %}
+                {% if file_path != "" %}
+                    <img src="{{ url_for('static', filename='assessment_rules_graphs/' + sub_list[5] + '/' + file_path) }}" alt="Image" style="margin-right: 10px;">
+                {% endif %}
+            {% endfor %}
+            </div>
+        {% endfor %}
+
+    {% elif 'descriptive_stats' in des_opt %}
+    <h2 class = "center-underline">Descriptive Statistics:</h2>
+        {% for sub_list in final_lst %}
+            <h2 class="center-text"> {{sub_list[2]}} </h2>
+            {{ sub_list[0] | safe }}
+            {{ sub_list[1] | safe }}
+        {% endfor %}
+    {% elif 'visual_stats' in des_opt %}
+    <h2 class = "center-underline">Graphical Analysis:</h2>
+        {% for sub_list in final_lst %}
+            <h2 class="center-text"> {{sub_list[4]}} </h2>
+            <div style="display: flex;">
+            {% for file_path in sub_list[0] %}
+                <img src="{{ url_for('static', filename='assessment_rules_graphs/' + sub_list[4] + '/' + file_path) }}" alt="Image" style="margin-right: 10px;">
+            {% endfor %}
+            </div>
+
+            <div style="display: flex;">
+            {% for file_path in sub_list[1] %}
+                <img src="{{ url_for('static', filename='assessment_rules_graphs/' + sub_list[4] + '/' + file_path) }}" alt="Image" style="margin-right: 10px;">
+            {% endfor %}
+            </div>
+
+            <div style="display: flex;">
+            {% for file_path in sub_list[2] %}
+                {% if file_path != "" %}
+                <img src="{{ url_for('static', filename='assessment_rules_graphs/' + sub_list[4] + '/' + file_path) }}" alt="Image" style="margin-right: 10px;">
+                {% endif %}
+            {% endfor %}
+            </div>
+
+            <div style="display: flex; justify-content: center;">
+            {% for file_path in sub_list[3] %}
+                {% if file_path != "" %}
+                <img src="{{ url_for('static', filename='assessment_rules_graphs/' + sub_list[4] + '/' + file_path) }}" alt="Image" style="margin-right: 10px;">
+                {% endif %}
+            {% endfor %}
+            </div>
+        {% endfor %}
+    {% endif %}
+  <p><a href="/">Go back to input page</a></p>
+  </body>
+</html>
