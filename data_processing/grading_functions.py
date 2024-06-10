@@ -41,8 +41,8 @@ def extract_ehi_grade(df, patient_data, ehi_val, start_d, end_d):
     ref = df_result['reference']
     df_result.drop(labels=['reference'], axis=1, inplace=True)
     df_result.insert(0, 'subject_reference', ref)
-    df_result['effectiveDateTime'] = df_result['effectiveDateTime'].apply(lambda x: x[0:x.find('.')])
-    df_result['effectiveDateTime'] = pd.to_datetime(df_result['effectiveDateTime'])
+    # df_result['effectiveDateTime'] = df_result['effectiveDateTime'].apply(lambda x: x[0:x.find('.')])
+    df_result['effectiveDateTime'] = pd.to_datetime(df_result['effectiveDateTime'], format='mixed')
     df_result['effectiveDateTime'] = df_result['effectiveDateTime'].apply(lambda x: x.replace(microsecond=0, second=0))
 
     df_result['Date'] = df_result['effectiveDateTime'].dt.date

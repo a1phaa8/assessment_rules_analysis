@@ -19,17 +19,19 @@ def assessment_unique_description(df, rule_name):
 
     descriptive_stats_str = (f"<br><b>{rule_name} Assessment Rules (unique) Statistics:</b><br>"
                              f"The dataset contains {total_values} unique users.<br>"
-                             "<br><b>Counts of Unique Assessment Rules Fired:</b><br>")
+                             "<br><b>Percentage of Unique Assessment Rules Fired:</b><br>")
 
     # Calculate percentage for each unique value
     percentages = {val: count / descriptive_stats['count'] * 100 for val, count in unique_counts.items()}
+    """ descriptive_stats_str += ''.join([f"The percentage of - {val.split(':')[0]} is {percent:.2f}%<br>" for val, percent in percentages.items()]) """
     for val, percent in percentages.items():
         descriptive_stats_str += f"The percentage of - {val.split(":")[0]} is {percent:.2f}%<br>"
 
     descriptive_stats_str += (f"<br>"
                               "Mode in Rules list is: {}<br>").format(mode_value.split(":")[0])
-
-    return descriptive_stats_str
+    results = {"total": total_values, "unique_rules": unique_values, "rules_count": unique_counts, "mode": mode_value,
+               "percentage_rules": percentages}
+    return results
 
 
 # noinspection PyUnusedLocal

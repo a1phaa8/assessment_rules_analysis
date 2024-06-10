@@ -7,6 +7,7 @@ from data_processing import return_required_dataframes as rd
 
 matplotlib.use('Agg')
 warnings.filterwarnings("ignore")
+
 def assessment_rule_unique_criteria_bar(df, rule_name, start_age, end_age, start_d, end_d, data_cond):
     s = df['assessment'].explode()
     s = s[s != ""]

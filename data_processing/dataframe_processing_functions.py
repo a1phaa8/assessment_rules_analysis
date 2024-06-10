@@ -59,8 +59,7 @@ def extract_ehi_columns(df, patient_dataframe, act_code, start_date, end_date, u
     df.drop(labels=['reference'], axis=1, inplace=True)
     df.insert(0, 'subject_reference', ref)
 
-    df['effectiveDateTime'] = df['effectiveDateTime'].apply(lambda x: x[0:x.find('.')])
-    df['effectiveDateTime'] = pd.to_datetime(df['effectiveDateTime'])
+    df['effectiveDateTime'] = pd.to_datetime(df['effectiveDateTime'], format='mixed')
     df['effectiveDateTime'] = df['effectiveDateTime'].apply(lambda x: x.replace(microsecond=0, second=0))
 
     df_test = df['code'].apply(pd.Series)
@@ -118,7 +117,7 @@ def extract_ehi_columns(df, patient_dataframe, act_code, start_date, end_date, u
         df['Rolling AVG'] = df['Rolling AVG'].apply(round_lst)
     elif usr == 'latest':
         # latest
-        df['effectiveDateTime'] = pd.to_datetime(df['effectiveDateTime'])
+        # df['effectiveDateTime'] = pd.to_datetime(df['effectiveDateTime'])
         latest_val = df.loc[df.groupby(['Date', 'subject_reference'])['effectiveDateTime'].idxmax()].reset_index()
         df = latest_val.groupby('subject_reference')['obs'].agg(list).reset_index()
         df = df[df['obs'].apply(lambda x: len(x) >= wndw_sz)]
