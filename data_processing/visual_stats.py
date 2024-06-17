@@ -8,7 +8,7 @@ from data_processing import return_required_dataframes as rd
 matplotlib.use('Agg')
 warnings.filterwarnings("ignore")
 
-def assessment_rule_unique_criteria_bar(df, rule_name, start_age, end_age, start_d, end_d, data_cond):
+def assessment_rule_unique_criteria_bar(df, rule_name, start_age, end_age, start_d, end_d, data_cond, no_rows_check):
     s = df['assessment'].explode()
     s = s[s != ""]
     # Count the frequency of each rule
@@ -38,7 +38,9 @@ def assessment_rule_unique_criteria_bar(df, rule_name, start_age, end_age, start
     plt.xlabel('Assessment Rule')
     plt.ylabel('User Percentage')
     title = f'Bar Graph for {rule_name} (Unique Assessment Rules)'
-    if start_age:
+    if no_rows_check:
+        title += ' for all age groups'
+    elif start_age:
         title += f' with age group ({start_age}-{end_age})' if end_age else f' with age group >= {start_age}'
     elif end_age:
         title += f' with age group <= {end_age}'
@@ -48,7 +50,9 @@ def assessment_rule_unique_criteria_bar(df, rule_name, start_age, end_age, start
     if data_cond in ['all', 'male', 'female']:
         title += f' for gender ({data_cond})'
 
-    if start_d and end_d:
+    if no_rows_check:
+        title += ' for all dates'
+    elif start_d and end_d:
         title += f' during {start_d} to {end_d}'
     elif start_d:
         title += f' from {start_d} onwards'
@@ -63,13 +67,13 @@ def assessment_rule_unique_criteria_bar(df, rule_name, start_age, end_age, start
     plt.gcf().set_size_inches(10, 6)
     # Save the plot
     filename = f"bar_graph_unique_factors_assessment.png"
-    static_folder = os.path.join(os.getcwd(), f'output/{rule_name}') # Assumes 'static' is in the current working directory
+    static_folder = os.path.join(os.getcwd(), f'static/assessment_rules_graphs/{rule_name}') # Assumes 'static' is in the current working directory
     file_path = os.path.join(static_folder, filename)
     plt.savefig(file_path)
     plt.close()
     return filename
 
-def assessment_rule_grouped_criteria_bar(df, rule_name, start_age, end_age, start_d, end_d, data_cond):
+def assessment_rule_grouped_criteria_bar(df, rule_name, start_age, end_age, start_d, end_d, data_cond, no_rows_check):
     s = df['assessment'].explode()
     # Count occurrences of RF, PF, and ICF strings
     rf_count = s.str.startswith('RF').sum()
@@ -91,34 +95,42 @@ def assessment_rule_grouped_criteria_bar(df, rule_name, start_age, end_age, star
     plt.xlabel('Assessment Rule Category')
     plt.ylabel('User Percentage')
     title = f'Bar Graph for {rule_name} (Grouped Assessment Rules)'
-    if start_age:
+
+    if no_rows_check:
+        title += ' for all age groups'
+    elif start_age:
         title += f' with age group ({start_age}-{end_age})' if end_age else f' with age group >= {start_age}'
     elif end_age:
         title += f' with age group <= {end_age}'
     else:
         title += ' for all age groups'
 
-    if data_cond in ['all', 'male', 'female']:
+    if no_rows_check:
+        title += f' for gender (all)'
+    elif data_cond in ['all', 'male', 'female']:
         title += f' for gender ({data_cond})'
 
-    if start_d or end_d:
+    if no_rows_check:
+        title += ' for all dates'
+    elif start_d or end_d:
         title += f' during {start_d} to {end_d}' if start_d and end_d else f' from {start_d} onwards' if start_d else f' up to {end_d}'
     else:
         title += ' for all dates'
+
     plt.title("\n".join(wrap(title)))
     plt.tight_layout()
     # Adjust figure size if needed (Set figure size to 10x6 inches)
     plt.gcf().set_size_inches(10, 6)
     # Save the plot
     filename = f"bar_graph_grouped_factors_{'assessment'}.png"
-    static_folder = os.path.join(os.getcwd(), f'output/{rule_name}')  # Assumes 'static' is in the current working directory
+    static_folder = os.path.join(os.getcwd(), f'static/assessment_rules_graphs/{rule_name}')  # Assumes 'static' is in the current working directory
     file_path = os.path.join(static_folder, filename)
     plt.tight_layout()
     plt.savefig(file_path)
     plt.close()
     return filename
 
-def assessment_rule_KF_criteria_bar(df, rule_name, start_age, end_age, start_d, end_d, data_cond):
+def assessment_rule_KF_criteria_bar(df, rule_name, start_age, end_age, start_d, end_d, data_cond, no_rows_check):
     KF_column = 'KF_flag'
     s = df[KF_column].explode()
 
@@ -140,17 +152,23 @@ def assessment_rule_KF_criteria_bar(df, rule_name, start_age, end_age, start_d, 
     plt.xlabel('Assessment Rule Category')
     plt.ylabel('User Percentage')
     title = f'Bar Graph for {rule_name} (KF and Non KF-Assessment Rules)'
-    if start_age:
+    if no_rows_check:
+        title += ' for all age groups'
+    elif start_age:
         title += f' with age group ({start_age}-{end_age})' if end_age else f' with age group >= {start_age}'
     elif end_age:
         title += f' with age group <= {end_age}'
     else:
         title += ' for all age groups'
 
-    if data_cond in ['all', 'male', 'female']:
+    if no_rows_check:
+        title += f' for gender (all)'
+    elif data_cond in ['all', 'male', 'female']:
         title += f' for gender ({data_cond})'
 
-    if start_d or end_d:
+    if no_rows_check:
+        title += ' for all dates'
+    elif start_d or end_d:
         title += f' during {start_d} to {end_d}' if start_d and end_d else f' from {start_d} onwards' if start_d else f' up to {end_d}'
     else:
         title += ' for all dates'
@@ -161,14 +179,14 @@ def assessment_rule_KF_criteria_bar(df, rule_name, start_age, end_age, start_d, 
     plt.gcf().set_size_inches(10, 6)
     # Save the plot
     filename = f"bar_graph_{KF_column}.png"
-    static_folder = os.path.join(os.getcwd(), f'output/{rule_name}')  # Assumes 'static' is in the current working directory
+    static_folder = os.path.join(os.getcwd(), f'static/assessment_rules_graphs/{rule_name}')  # Assumes 'static' is in the current working directory
     file_path = os.path.join(static_folder, filename)
     plt.tight_layout()
     plt.savefig(file_path)
     plt.close()
     return filename
 
-def assessment_rule_unique_KF_criteria_bar(df, rule_name, start_age, end_age, start_d, end_d, data_cond):
+def assessment_rule_unique_KF_criteria_bar(df, rule_name, start_age, end_age, start_d, end_d, data_cond, no_rows_check):
     KF_column = 'KF_flag'
     assessment_column = 'assessment'
 
@@ -191,17 +209,23 @@ def assessment_rule_unique_KF_criteria_bar(df, rule_name, start_age, end_age, st
     plt.xlabel('Assessment Type')
     plt.ylabel('User Percentage')
     title = f'Bar Graph for {rule_name} (Unique KF-Assessment Rules)'
-    if start_age:
+    if no_rows_check:
+        title += ' for all age groups'
+    elif start_age:
         title += f' with age group ({start_age}-{end_age})' if end_age else f' with age group >= {start_age}'
     elif end_age:
         title += f' with age group <= {end_age}'
     else:
         title += ' for all age groups'
 
-    if data_cond in ['all', 'male', 'female']:
+    if no_rows_check:
+        title += f' for gender (all)'
+    elif data_cond in ['all', 'male', 'female']:
         title += f' for gender ({data_cond})'
 
-    if start_d or end_d:
+    if no_rows_check:
+        title += ' for all dates'
+    elif start_d or end_d:
         title += f' during {start_d} to {end_d}' if start_d and end_d else f' from {start_d} onwards' if start_d else f' up to {end_d}'
     else:
         title += ' for all dates'
@@ -214,7 +238,7 @@ def assessment_rule_unique_KF_criteria_bar(df, rule_name, start_age, end_age, st
     plt.gcf().set_size_inches(10, 6)
 
     # Save the plot
-    static_folder = os.path.join(os.getcwd(), f'output/{rule_name}')
+    static_folder = os.path.join(os.getcwd(), f'static/assessment_rules_graphs/{rule_name}')
     os.makedirs(static_folder, exist_ok=True)  # Ensure directory exists
     filename = f"bar_graph_unique_{KF_column}-{rule_name}.png"
     file_path = os.path.join(static_folder, filename)
@@ -223,7 +247,7 @@ def assessment_rule_unique_KF_criteria_bar(df, rule_name, start_age, end_age, st
     return filename
 
 
-def assessment_rule_unique_criteria_pie_chart(df, rule_name, start_age, end_age, start_d, end_d, data_cond):
+def assessment_rule_unique_criteria_pie_chart(df, rule_name, start_age, end_age, start_d, end_d, data_cond, no_rows_check):
     s = df['assessment'].explode()
     s = s[s != ""]
     assessment_counts = s.value_counts().sort_index(ascending=False)
@@ -247,7 +271,9 @@ def assessment_rule_unique_criteria_pie_chart(df, rule_name, start_age, end_age,
     prefixes = [label.split(":")[0] for label in assessment_counts.index]
     plt.pie(assessment_counts, labels=prefixes, autopct='%1.1f%%', startangle=150, explode=explode, colors=colors)
     title = f'Pie Chart for {rule_name}(Unique Assessment Rules)'
-    if start_age != "" and end_age != "":
+    if no_rows_check:
+        title += ' for all age groups'
+    elif start_age != "" and end_age != "":
         title += f' with age group ({start_age}-{end_age})'
     elif start_age != "":
         title += f' with age group >= {start_age}'
@@ -256,10 +282,14 @@ def assessment_rule_unique_criteria_pie_chart(df, rule_name, start_age, end_age,
     else:
         title += ' for all age groups'
 
-    if data_cond in ['all', 'male', 'female']:
+    if no_rows_check:
+        title += f' for gender(all)'
+    elif data_cond in ['all', 'male', 'female']:
         title += f' for gender({data_cond})'
 
-    if start_d != "" and end_d != "":
+    if no_rows_check:
+        title += ' for all dates'
+    elif start_d != "" and end_d != "":
         title += f' during {start_d} to {end_d}'
     elif start_d != "":
         title += f' from {start_d} onwards'
@@ -272,7 +302,7 @@ def assessment_rule_unique_criteria_pie_chart(df, rule_name, start_age, end_age,
     # Adjust figure size if needed (Set figure size to 10x6 inches)
     plt.gcf().set_size_inches(10, 6)
     filename = "pie_chart_unique_factors_assessment.png"
-    static_folder = os.path.join(os.getcwd(), f'output/{rule_name}')  # Assumes 'static' is in the current working directory
+    static_folder = os.path.join(os.getcwd(), f'static/assessment_rules_graphs/{rule_name}')  # Assumes 'static' is in the current working directory
     file_path = os.path.join(static_folder, filename)
     plt.tight_layout()
     plt.savefig(file_path)
@@ -280,7 +310,7 @@ def assessment_rule_unique_criteria_pie_chart(df, rule_name, start_age, end_age,
     return filename
 
 
-def assessment_rule_grouped_criteria_pie_chart(df, rule_name, start_age, end_age, start_d, end_d, data_cond):
+def assessment_rule_grouped_criteria_pie_chart(df, rule_name, start_age, end_age, start_d, end_d, data_cond, no_rows_check):
     s = df['assessment'].explode()
 
     # Count occurrences of RF, PF, and ICF strings
@@ -309,7 +339,9 @@ def assessment_rule_grouped_criteria_pie_chart(df, rule_name, start_age, end_age
 
     # Title and formatting
     title = f'Pie Chart for {rule_name}(Grouped Assessment Rules)'
-    if start_age != "" and end_age != "":
+    if no_rows_check:
+        title += ' for all age groups'
+    elif start_age != "" and end_age != "":
         title += f' with age group ({start_age}-{end_age})'
     elif start_age != "":
         title += f' with age group >= {start_age}'
@@ -318,10 +350,14 @@ def assessment_rule_grouped_criteria_pie_chart(df, rule_name, start_age, end_age
     else:
         title += ' for all age groups'
 
-    if data_cond in ['all', 'male', 'female']:
+    if no_rows_check:
+        title += f' for gender(all)'
+    elif data_cond in ['all', 'male', 'female']:
         title += f' for gender({data_cond})'
 
-    if start_d != "" and end_d != "":
+    if no_rows_check:
+        title += ' for all dates'
+    elif start_d != "" and end_d != "":
         title += f' during {start_d} to {end_d}'
     elif start_d != "":
         title += f' from {start_d} onwards'
@@ -329,11 +365,10 @@ def assessment_rule_grouped_criteria_pie_chart(df, rule_name, start_age, end_age
         title += f' up to {end_d}'
     else:
         title += ' for all dates'
-
     plt.title("\n".join(wrap(title)))
     # Save and close plot
     filename = "pie_chart_grouped_factors_assessment.png"
-    static_folder = os.path.join(os.getcwd(), f'output/{rule_name}')  # Assumes 'static' is in the current working directory
+    static_folder = os.path.join(os.getcwd(), f'static/assessment_rules_graphs/{rule_name}')  # Assumes 'static' is in the current working directory
     file_path = os.path.join(static_folder, filename)
     # Adjust layout to prevent clipping
     plt.tight_layout()
@@ -344,7 +379,7 @@ def assessment_rule_grouped_criteria_pie_chart(df, rule_name, start_age, end_age
     return filename
 
 
-def assessment_rule_KF_criteria_pie_chart(df, rule_name, start_age, end_age, start_d, end_d, data_cond):
+def assessment_rule_KF_criteria_pie_chart(df, rule_name, start_age, end_age, start_d, end_d, data_cond, no_rows_check):
     KF_column = 'KF_flag'
     s = df[KF_column].explode()
     # Get the count of 0s and 1s in the Series s
@@ -359,7 +394,9 @@ def assessment_rule_KF_criteria_pie_chart(df, rule_name, start_age, end_age, sta
     plt.axis('equal')
     # Title and formatting
     title = f'Pie Chart for {rule_name}(KF and Non KF Rules)'
-    if start_age != "" and end_age != "":
+    if no_rows_check:
+        title += ' for all age groups'
+    elif start_age != "" and end_age != "":
         title += f' with age group ({start_age}-{end_age})'
     elif start_age != "":
         title += f' with age group >= {start_age}'
@@ -368,10 +405,14 @@ def assessment_rule_KF_criteria_pie_chart(df, rule_name, start_age, end_age, sta
     else:
         title += ' for all age groups'
 
-    if data_cond in ['all', 'male', 'female']:
+    if no_rows_check:
+        title += f' for gender(all)'
+    elif data_cond in ['all', 'male', 'female']:
         title += f' for gender({data_cond})'
 
-    if start_d != "" and end_d != "":
+    if no_rows_check:
+        title += ' for all dates'
+    elif start_d != "" and end_d != "":
         title += f' during {start_d} to {end_d}'
     elif start_d != "":
         title += f' from {start_d} onwards'
@@ -379,13 +420,12 @@ def assessment_rule_KF_criteria_pie_chart(df, rule_name, start_age, end_age, sta
         title += f' up to {end_d}'
     else:
         title += ' for all dates'
-
     plt.title("\n".join(wrap(title)))
     plt.tight_layout()
     # Adjust figure size if needed (Set figure size to 10x6 inches)
     plt.gcf().set_size_inches(10, 6)
     filename = "pie_chart_" + KF_column + ".png"
-    static_folder = os.path.join(os.getcwd(), f'output/{rule_name}')  # Assumes 'static' is in the current working directory
+    static_folder = os.path.join(os.getcwd(), f'static/assessment_rules_graphs/{rule_name}')  # Assumes 'static' is in the current working directory
     file_path = os.path.join(static_folder, filename)
     plt.savefig(file_path)
     plt.close()

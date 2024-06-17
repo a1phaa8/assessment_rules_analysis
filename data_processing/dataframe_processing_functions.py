@@ -4,8 +4,8 @@ from decimal import Decimal, ROUND_HALF_UP
 
 import pymannkendall as mk
 
-from data_processing.grading_functions import *
-from data_processing.instaBeats_functions import *
+from .grading_functions import *
+from .instaBeats_functions import *
 
 warnings.filterwarnings("ignore")
 
@@ -16,50 +16,56 @@ def extract_df_date_range(df, strt_d, end_d, min_d, max_d):
                 strt_d > max_d and end_d > max_d) or (strt_d > max_d and end_d < min_d):
             strt_d = min_d
             end_d = max_d
-            df_test = df
             df = df[df['Date'] >= strt_d]
             df = df[df['Date'] <= end_d]
-            if df.shape[0] < 10:
-                return df_test
+            return df
+        elif end_d > max_d:
+            end_d = max_d
+            df = df[df['Date'] >= strt_d]
+            df = df[df['Date'] <= end_d]
+            return df
+        elif strt_d < min_d:
+            strt_d = min_d
+            df = df[df['Date'] >= strt_d]
+            df = df[df['Date'] <= end_d]
             return df
         else:
             df = df[df['Date'] >= strt_d]
             df = df[df['Date'] <= end_d]
             return df
     elif strt_d != "":
-        if strt_d < min_d:
+        if strt_d < min_d or strt_d > max_d:
             strt_d = min_d
         end_d = max_d
-        df_test = df
         df = df[df['Date'] >= strt_d]
         df = df[df['Date'] <= end_d]
-        if df.shape[0] < 10:
-            return df_test
         return df
     elif end_d != "":
-        df_test = df
-        if end_d > max_d:
+        if end_d > max_d or end_d < min_d:
             end_d = max_d
         strt_d = min_d
         df = df[df['Date'] >= strt_d]
         df = df[df['Date'] <= end_d]
-        if df.shape[0] < 10:
-            return df_test
         return df
     else:
         return df
 
 
-def extract_ehi_columns(df, patient_dataframe, act_code, start_date, end_date, usr, wndw_sz):
-    df = df.dropna(subset=['code'])
-    df = df[['subject', 'effectiveDateTime', 'code', 'valueQuantity', 'resourceType']]
+def extract_ehi_columns(df, ehi_value, filtered_patient_dataframe, all_patient_data, act_code, start_date, end_date,
+                        usr, wndw_sz):
+    no_rows = 0
+    df.dropna(subset=['code'], inplace=True)
+    if ehi_value == 'cadphr-cvreactivity':
+        df = df[['subject', 'effectiveDateTime', 'code', 'valueQuantity', 'encounter', 'resourceType']]
+    else:
+        df = df[['subject', 'effectiveDateTime', 'code', 'valueQuantity']]
     df = pd.concat([df.drop(['subject'], axis=1), df['subject'].apply(pd.Series)], axis=1)
     # inserting column at appropriate place
     ref = df['reference']
     df.drop(labels=['reference'], axis=1, inplace=True)
     df.insert(0, 'subject_reference', ref)
-
-    df['effectiveDateTime'] = pd.to_datetime(df['effectiveDateTime'], format='mixed')
+    df['effectiveDateTime'] = df['effectiveDateTime'].apply(lambda x: x[0:x.find('.')])
+    df['effectiveDateTime'] = pd.to_datetime(df['effectiveDateTime'])
     df['effectiveDateTime'] = df['effectiveDateTime'].apply(lambda x: x.replace(microsecond=0, second=0))
 
     df_test = df['code'].apply(pd.Series)
@@ -93,10 +99,42 @@ def extract_ehi_columns(df, patient_dataframe, act_code, start_date, end_date, u
     df.insert(4, "Time", ref_time)
     date_min = min(df['Date'])
     date_max = max(df['Date'])
-    # print("EHI_COL")
-    # print("Size of df before date filtering:", df.shape)
+    df_copy = df
+    print("EHI_COL")
+    print("Size of df before date filtering:", df.shape)
     df = extract_df_date_range(df, start_date, end_date, date_min, date_max)
-    # print("Size of df after date filtering:", df.shape)
+    print("Size of df after date filtering:", df.shape)
+    df_date_copy = df
+    if df.shape[0] == 0:
+        no_rows = 1
+        df = df_copy
+    if ehi_value == 'cadphr-cvreactivity':
+        df_encounter = df['encounter'].apply(pd.Series)
+        df_encounter = df_encounter.rename(columns={'reference': 'encounter_reference'})
+        df_encounter['encounter_reference'] = df_encounter['encounter_reference'].str.replace("Encounter/", "", 1)
+        df = pd.concat([df, df_encounter], axis=1)
+        df = df.drop(['encounter', 0], axis=1)
+        df1 = df
+        df = pd.merge(df, filtered_patient_dataframe)
+        print("Size of df after merging:", df.shape)
+        if df.shape[0] == 0:
+            no_rows = 1
+            df = pd.merge(df1, all_patient_data)
+            print("Size of df after new merging:", df.shape)
+        min_age, max_age = min(df['age']), max(df['age'])
+        min_bmi, max_bmi = min(df['BMI']), max(df['BMI'])
+        return df, date_min, date_max, min_age, max_age, min_bmi, max_bmi, no_rows
+    elif ehi_value == 'cadphr-henergy':
+        df = pd.merge(df, filtered_patient_dataframe)
+        print("Size of df after merging:", df.shape)
+        if df.shape[0] == 0:
+            no_rows = 1
+            df = pd.merge(df_date_copy, all_patient_data)
+            print("Size of df after new merging:", df.shape)
+        min_age, max_age = min(df['age']), max(df['age'])
+        min_bmi, max_bmi = min(df['BMI']), max(df['BMI'])
+        return df, date_min, date_max, min_age, max_age, min_bmi, max_bmi, no_rows
+
     round_lst = lambda lst: [round(x, 2) for x in lst]
 
     if usr == 'avg':
@@ -117,7 +155,7 @@ def extract_ehi_columns(df, patient_dataframe, act_code, start_date, end_date, u
         df['Rolling AVG'] = df['Rolling AVG'].apply(round_lst)
     elif usr == 'latest':
         # latest
-        # df['effectiveDateTime'] = pd.to_datetime(df['effectiveDateTime'])
+        df['effectiveDateTime'] = pd.to_datetime(df['effectiveDateTime'])
         latest_val = df.loc[df.groupby(['Date', 'subject_reference'])['effectiveDateTime'].idxmax()].reset_index()
         df = latest_val.groupby('subject_reference')['obs'].agg(list).reset_index()
         df = df[df['obs'].apply(lambda x: len(x) >= wndw_sz)]
@@ -137,16 +175,21 @@ def extract_ehi_columns(df, patient_dataframe, act_code, start_date, end_date, u
         # rounding off the values to 2 decimal places
         df['obs'] = df['obs'].apply(round_lst)
         df['Rolling AVG'] = df['Rolling AVG'].apply(round_lst)
-    df = pd.merge(df, patient_dataframe)
-    # print("Size of df after merging:", df.shape)
+    df_roll_copy = df
+    df = pd.merge(df, filtered_patient_dataframe)
+    print("Size of df after merging:", df.shape)
+    if df.shape[0] == 0:
+        no_rows = 1
+        df = pd.merge(df_roll_copy, all_patient_data)
+        print("Size of df after new merging:", df.shape)
     min_age, max_age = min(df['age']), max(df['age'])
     min_bmi, max_bmi = min(df['BMI']), max(df['BMI'])
-    return df, date_min, date_max, min_age, max_age, min_bmi, max_bmi
+    return df, date_min, date_max, min_age, max_age, min_bmi, max_bmi, no_rows
 
 
-def extract_sbp_dbp_columns(df, ehi_value, patient_df, start_date, end_date, usr, wndw_sz):
+def extract_sbp_dbp_columns(df, ehi_value, filtered_patient_df, all_patient_data, start_date, end_date, usr, wndw_sz):
+    no_rows = 0
     df = df[['subject', 'effectiveDateTime', 'code', 'encounter', 'component']]
-
     df = pd.concat([df.drop(['subject'], axis=1), df['subject'].apply(pd.Series)], axis=1)
     ref = df['reference']
     df.drop(labels=['reference'], axis=1, inplace=True)
@@ -193,10 +236,14 @@ def extract_sbp_dbp_columns(df, ehi_value, patient_df, start_date, end_date, usr
     df.insert(3, "Date", ref_date)
     df.insert(4, "Time", ref_time)
     min_date, max_date = min(df['Date']), max(df['Date'])
-    # print("SBP_DBP")
-    # print("Size of df before date filtering:", df.shape)
+    df_copy = df
+    print("SBP_DBP")
+    print("Size of df before date filtering:", df.shape)
     df = extract_df_date_range(df, start_date, end_date, min_date, max_date)
-    # print("Size of df after date filtering:", df.shape)
+    print("Size of df after date filtering:", df.shape)
+    if df.shape[0] == 0:
+        no_rows = 1
+        df = df_copy
     round_lst = lambda lst: [round(x, 2) for x in lst]
 
     if usr == 'avg':
@@ -223,11 +270,15 @@ def extract_sbp_dbp_columns(df, ehi_value, patient_df, start_date, end_date, usr
         # rounding off the values to 2 decimal places
         df['obs'] = df['obs'].apply(round_lst)
         df['Rolling AVG'] = df['Rolling AVG'].apply(round_lst)
-    df = pd.merge(df, patient_df)
-    # print("Size of df after merging:", df.shape)
+    df_roll_copy = df
+    df = pd.merge(df, filtered_patient_df)
+    print("Size of df after merging:", df.shape)
+    if df.shape[0] == 0:
+        no_rows = 1
+        df = pd.merge(df_roll_copy, all_patient_data)
     min_age, max_age = min(df['age']), max(df['age'])
     min_bmi, max_bmi = min(df['BMI']), max(df['BMI'])
-    return df, min_date, max_date, min_age, max_age, min_bmi, max_bmi
+    return df, min_date, max_date, min_age, max_age, min_bmi, max_bmi, no_rows
 
 
 def extract_sbp(sbp_dataframe):
@@ -469,7 +520,9 @@ def get_latest_grade(grades_list):
         return grades_list[-1]
 
 
-def emotion_variability(df, patient_df, min_sufficiency, sliding_window_size, start_date, end_date):
+def emotion_variability(df, filtered_patient_df, all_patient_data, min_sufficiency, sliding_window_size, start_date,
+                        end_date):
+    no_rows = 0
     df = df[['subject', 'effectiveDateTime', 'code', 'component']]
 
     df = pd.concat([df.drop(['subject'], axis=1), df['subject'].apply(pd.Series)], axis=1)
@@ -515,18 +568,25 @@ def emotion_variability(df, patient_df, min_sufficiency, sliding_window_size, st
     df_result['valence'] = df_result['valence'].apply(lambda x: np.round(x, 2))
     df_result['valence'] = df_result['valence'].apply(lambda x: x.tolist() if isinstance(x, np.ndarray) else x)
     df_result['converted_valence'] = df_result['converted_valence'].apply(lambda x: np.round(x, 2))
-    df_result['converted_valence'] = df_result['converted_valence'].apply(lambda x: x.tolist() if isinstance(x, np.ndarray) else x)
-    df_result['emotionvariability'] = df_result['converted_valence'].apply(lambda x: sliding_std(x, sliding_window_size))
-
-    df_result = pd.merge(df_result, patient_df, on='subject_reference', how='inner')
+    df_result['converted_valence'] = df_result['converted_valence'].apply(
+        lambda x: x.tolist() if isinstance(x, np.ndarray) else x)
+    df_result['variability'] = df_result['converted_valence'].apply(
+        lambda x: sliding_std(x, sliding_window_size))
+    df_result_copy = df_result
+    df_result = pd.merge(df_result, filtered_patient_df, on='subject_reference', how='inner')
+    if df_result.shape[0] == 0:
+        no_rows = 1
+        df_result = pd.merge(df_result_copy, all_patient_data)
     min_age = min(df_result['age'])
     max_age = max(df_result['age'])
     min_bmi = min(df_result['BMI'])
     max_bmi = max(df_result['BMI'])
-    return df_result, date_min, date_max, min_age, max_age, min_bmi, max_bmi
+    return df_result, date_min, date_max, min_age, max_age, min_bmi, max_bmi, no_rows
 
 
-def emotion_instability(df, patient_df, min_sufficiency, sliding_window_size, start_date, end_date):
+def emotion_instability(df, filtered_patient_df, all_patient_data, min_sufficiency, sliding_window_size, start_date,
+                        end_date):
+    no_rows = 0
     df = df[['subject', 'effectiveDateTime', 'code', 'component']]
 
     df = pd.concat([df.drop(['subject'], axis=1), df['subject'].apply(pd.Series)], axis=1)
@@ -582,16 +642,21 @@ def emotion_instability(df, patient_df, min_sufficiency, sliding_window_size, st
     # Convert the tuples to lists
     df_result['emotioninstability_raw'] = df_result['emotioninstability_raw'].apply(list)
     df_result['emotioninstability'] = df_result['emotioninstability'].apply(list)
-
-    df_result = pd.merge(df_result, patient_df, on='subject_reference', how='inner')
+    df_result_copy = df_result
+    df_result = pd.merge(df_result, filtered_patient_df, on='subject_reference', how='inner')
+    if df_result.shape[0] == 0:
+        no_rows = 1
+        df_result = pd.merge(df_result_copy, all_patient_data)
     min_age = min(df_result['age'])
     max_age = max(df_result['age'])
     min_bmi = min(df_result['BMI'])
     max_bmi = max(df_result['BMI'])
-    return df_result, date_min, date_max, min_age, max_age, min_bmi, max_bmi
+    return df_result, date_min, date_max, min_age, max_age, min_bmi, max_bmi, no_rows
 
 
-def emotion_inertia(df, patient_df, min_sufficiency, sliding_window_size, start_date, end_date):
+def emotion_inertia(df, filtered_patient_df, all_patient_data, min_sufficiency, sliding_window_size, start_date,
+                    end_date):
+    no_rows = 0
     df = df[['subject', 'effectiveDateTime', 'code', 'component']]
 
     df = pd.concat([df.drop(['subject'], axis=1), df['subject'].apply(pd.Series)], axis=1)
@@ -650,12 +715,16 @@ def emotion_inertia(df, patient_df, min_sufficiency, sliding_window_size, start_
     df_result['emotioninertia_raw'] = df_result['emotioninertia_raw'].apply(list)
     df_result['emotioninertia'] = df_result['emotioninertia'].apply(list)
 
-    df_result = pd.merge(df_result, patient_df, on='subject_reference', how='inner')
+    df_result_copy = df_result
+    df_result = pd.merge(df_result, filtered_patient_df, on='subject_reference', how='inner')
+    if df_result.shape[0] == 0:
+        no_rows = 1
+        df_result = pd.merge(df_result_copy, all_patient_data)
     min_age = min(df_result['age'])
     max_age = max(df_result['age'])
     min_bmi = min(df_result['BMI'])
     max_bmi = max(df_result['BMI'])
-    return df_result, date_min, date_max, min_age, max_age, min_bmi, max_bmi
+    return df_result, date_min, date_max, min_age, max_age, min_bmi, max_bmi, no_rows
 
 
 def calculate_HRmax(age):
@@ -691,25 +760,20 @@ def data_pop(df, data_select):
 
 # returning df with desired age range
 def age_range(df, start_age, end_age):
-    df_test = df
     if start_age == "" and end_age == "":
         return df
 
     if start_age == "":
-        if end_age < min(df['age']):
-            return df
+        end_age = int(end_age)
         df = df[df['age'] <= end_age]
 
     elif end_age == "":
-        if start_age > max(df['age']):
-            return df
+        start_age = int(start_age)
         df = df[df['age'] >= start_age]
     else:
-        if start_age > max(df['age']) or end_age < min(df['age']):
-            return df
+        start_age = int(start_age)
+        end_age = int(end_age)
         df = df[(start_age <= df['age']) & (df['age'] <= end_age)]
-    if df.shape[0] < 5:
-        return df_test
     return df
 
 
@@ -778,25 +842,41 @@ def extract_weight(df_all):
 
 
 def get_demographic_data(user_data, weight_df, height_df, gender, start_age, end_age, start_BMI, end_BMI):
+    no_rows = 0
     patient_df = pd.read_json(user_data)
     df_patient = extract_patient_info(patient_df, gender)
-    # print("DEMOGRAPHICS")
-    # print("Size of df before age filtering:", df_patient.shape)
+    df_copy = df_patient
+    print("DEMOGRAPHICS")
+    print("Size of df before age filtering:", df_patient.shape)
     df_patient = age_range(df_patient, start_age, end_age)
-    # print("Size of df after age filtering:", df_patient.shape)
+    print("Size of df after age filtering:", df_patient.shape)
+    if df_patient.shape[0] == 0:
+        df_patient = df_copy
+        no_rows = 1
     df_height = extract_height(height_df)
     df_weight = extract_weight(weight_df)
     df_height_weight = pd.merge(df_height, df_weight, on='subject_reference', how='inner')
     df_bmi = calculate_bmi(df_height_weight)
-    # print("Size of df before bmi filtering:", df_bmi.shape)
+    df_copy_bmi = df_bmi
+    print("Size of df before bmi filtering:", df_bmi.shape)
     df_bmi = BMI_range(df_bmi, start_BMI, end_BMI)
-    # print("Size of df after bmi filtering:", df_bmi.shape)
+    print("Size of df after bmi filtering:", df_bmi.shape)
+    all_patient_data = pd.merge(df_copy, df_copy_bmi, on='subject_reference', how='inner')
+    print("Size of original user data: ", all_patient_data.shape[0])
+    if df_bmi.shape[0] == 0:
+        no_rows = 1
+        df_bmi = df_copy_bmi
     df_patient = pd.merge(df_patient, df_bmi, on='subject_reference', how='inner')
-    # print("Size of df after merging:", df_patient.shape)
-    return df_patient
+    print("Size of patient after merging bmi:", df_patient.shape[0])
+    if df_patient.shape[0] == 0:
+        no_rows = 1
+        df_patient = pd.merge(df_copy, df_bmi, on='subject_reference', how='inner')
+    print("Size of df after merging:", df_patient.shape)
+    return df_patient, all_patient_data, no_rows
 
 
-def extract_pss(df_all, patient_df):
+def extract_pss(df_all, filtered_patient_df, all_patient_data):
+    no_rows = 0
     df = df_all[['subject', 'valueInteger', 'effectiveDateTime']]
 
     df = pd.concat([df.drop(['subject'], axis=1), df['subject'].apply(pd.Series)], axis=1)
@@ -812,7 +892,13 @@ def extract_pss(df_all, patient_df):
     df['subject_reference'] = df['subject_reference'].astype("str")
     df['subject_reference'] = df['subject_reference'].apply(
         lambda x: x.replace("Patient/", "", 1) if x.startswith("Patient/") else x)
-    df = pd.merge(df, patient_df)
+    df_copy = df
+    df = pd.merge(df, filtered_patient_df)
+    print("Size of dataframe Percieved Stress after merging:", df.shape[0])
+    if df.shape[0] == 0:
+        no_rows = 1
+        df = pd.merge(df_copy, all_patient_data)
+        print("Size of dataframe Percieved Stress after merging new:", df.shape[0])
     # Convert effectiveDateTime to datetime
     df['effectiveDateTime'] = pd.to_datetime(df['effectiveDateTime'])
 
@@ -829,10 +915,11 @@ def extract_pss(df_all, patient_df):
     df['pss_value'] = df['pss_value'].astype(int)
     min_age, max_age = min(df['age']), max(df['age'])
     min_bmi, max_bmi = min(df['BMI']), max(df['BMI'])
-    return df, date_min, date_max, min_age, max_age, min_bmi, max_bmi
+    return df, date_min, date_max, min_age, max_age, min_bmi, max_bmi, no_rows
 
 
-def extract_stress_index(df_all, patient_df):
+def extract_stress_index(df_all, filtered_patient_df, all_patient_data):
+    no_rows = 0
     df = df_all[['subject', 'computedValue', 'ehiGrading', 'effectiveDateTime', 'ehiInterpretation']]
 
     df = pd.concat([df.drop(['subject'], axis=1), df['subject'].apply(pd.Series)], axis=1)
@@ -864,10 +951,14 @@ def extract_stress_index(df_all, patient_df):
     date_max = max(df['Date'])
     df['stress_value'] = df['stress_value'].astype(int)
     df.drop(labels=[0, 'effectiveDateTime'], axis=1, inplace=True)
-    df = pd.merge(df, patient_df)
+    df_copy = df
+    df = pd.merge(df, filtered_patient_df)
+    if df.shape[0] == 0:
+        no_rows = 1
+        df = pd.merge(df_copy, all_patient_data)
     min_age, max_age = min(df['age']), max(df['age'])
     min_bmi, max_bmi = min(df['BMI']), max(df['BMI'])
-    return df, date_min, date_max, min_age, max_age, min_bmi, max_bmi
+    return df, date_min, date_max, min_age, max_age, min_bmi, max_bmi, no_rows
 
 
 def calculate_std_with_sliding_window(l1, ws):
@@ -915,53 +1006,87 @@ def extract_format_find_trend(df, window_size):
     return df
 
 
-def process(df, activity_code, patient_dataframe, start_date, end_date, sliding_window, day_condition,
+def process(df, activity_code, patient_dataframe, patient_original, start_date, end_date, sliding_window, day_condition,
             min_sufficiency,
             max_sufficiency, ehi_value):
-    if ehi_value == "cadphr-hrrra" or ehi_value == "cadphr-diabetesriskscore" or ehi_value == "cadphr-cadrisk10" or ehi_value == "cadphr-osariskscore" or ehi_value == 'cadphr-rcvage' or ehi_value == "cadphr-vo2maxra" or ehi_value == "cadphr-ecrfra":
-        df_grade, min_date, max_date, min_age, max_age, min_bmi, max_bmi = extract_ehi_grade(df, patient_dataframe,
-                                                                                             ehi_value, start_date,
-                                                                                             end_date)
+    if ehi_value == "cadphr-vo2maxra" or ehi_value == "cadphr-cadrisk10" or ehi_value == "cadphr-ecrfra":
+        df, min_date, max_date, min_age, max_age, min_bmi, max_bmi, no_rows = extract_ehi_computedValue(df, ehi_value,
+                                                                                                        patient_dataframe,
+                                                                                                        patient_original,
+                                                                                                        start_date,
+                                                                                                        end_date,
+                                                                                                        day_condition,
+                                                                                                        sliding_window)
+        df = add_grade_column(df, ehi_value)
+        return df, min_date, max_date, min_age, max_age, min_bmi, max_bmi, no_rows
+    elif ehi_value == "cadphr-diabetesriskscore" or ehi_value == "cadphr-osariskscore" or ehi_value == "cadphr-hrrra" or ehi_value == "cadphr-rcvage":
+        df_grade, min_date, max_date, min_age, max_age, min_bmi, max_bmi, no_rows = extract_ehi_grade(df,
+                                                                                                      patient_dataframe,
+                                                                                                      patient_original,
+                                                                                                      ehi_value,
+                                                                                                      start_date,
+                                                                                                      end_date)
         latest_grade = ehi_value + "_grade"
         df_grade = df_grade.rename(columns={'ehi_grade': latest_grade})
-        return df_grade, min_date, max_date, min_age, max_age, min_bmi, max_bmi
-
+        return df_grade, min_date, max_date, min_age, max_age, min_bmi, max_bmi, no_rows
+    elif ehi_value == "cadphr-na":
+        df_roll, min_date, max_date, min_age, max_age, min_bmi, max_bmi, no_rows = extract_ehi_columns(df, ehi_value,
+                                                                                                       patient_dataframe,
+                                                                                                       patient_original,
+                                                                                                       activity_code,
+                                                                                                       start_date,
+                                                                                                       end_date,
+                                                                                                       day_condition,
+                                                                                                       sliding_window)
+        df_roll.rename(columns={'Latest': 'NA'}, inplace=True)
+        df_roll = na_grading(df_roll)
+        return df_roll, min_date, max_date, min_age, max_age, min_bmi, max_bmi, no_rows
     elif ehi_value == "cadphr-sbp" or ehi_value == "cadphr-dbp":
-        df_roll, min_date, max_date, min_age, max_age, min_bmi, max_bmi = extract_sbp_dbp_columns(df, ehi_value,
-                                                                                                  patient_dataframe,
-                                                                                                  start_date, end_date,
-                                                                                                  day_condition,
-                                                                                                  sliding_window)
+        df_roll, min_date, max_date, min_age, max_age, min_bmi, max_bmi, no_rows = extract_sbp_dbp_columns(df,
+                                                                                                           ehi_value,
+                                                                                                           patient_dataframe,
+                                                                                                           patient_original,
+                                                                                                           start_date,
+                                                                                                           end_date,
+                                                                                                           day_condition,
+                                                                                                           sliding_window)
         if ehi_value == "cadphr-sbp":
-            df_patient = df_roll.rename(columns={'Latest': 'SBP'})
-            add_grade_column(df_patient, ehi_value)
+            df_roll['SBP_obs'] = df_roll['obs']
+            df_roll.rename(columns={'Latest': 'SBP'}, inplace=True)
+            add_grade_column(df_roll, ehi_value)
         else:
-            df_patient = df_roll.rename(columns={'Latest': 'DBP'})
-            add_grade_column(df_patient, ehi_value)
-        return df_patient, min_date, max_date, min_age, max_age, min_bmi, max_bmi
-
+            df_roll['DBP_obs'] = df_roll['obs']
+            df_roll.rename(columns={'Latest': 'DBP'}, inplace=True)
+            add_grade_column(df_roll, ehi_value)
+        return df_roll, min_date, max_date, min_age, max_age, min_bmi, max_bmi, no_rows
     elif ehi_value == "cadphr-pulsepressure":
-        latest_grade = ehi_value + "_grade"
-        df[latest_grade] = df.apply(pulsePressure_assign_grade, axis=1)
+        df = add_grade_column(df, ehi_value)
         return df
-
     elif ehi_value == "cadphr-emotioninstability" or ehi_value == "cadphr-emotioninertia" or ehi_value == "cadphr-emotionvariability":
         if ehi_value == "cadphr-emotioninertia":
-            df, min_date, max_date, min_age, max_age, min_bmi, max_bmi = emotion_inertia(df, patient_dataframe,
-                                                                                         min_sufficiency,
-                                                                                         sliding_window, start_date,
-                                                                                         end_date)
+            df, min_date, max_date, min_age, max_age, min_bmi, max_bmi, no_rows = emotion_inertia(df,
+                                                                                                  patient_dataframe,
+                                                                                                  patient_original,
+                                                                                                  min_sufficiency,
+                                                                                                  sliding_window,
+                                                                                                  start_date,
+                                                                                                  end_date)
         elif ehi_value == "cadphr-emotionvariability":
-            df, min_date, max_date, min_age, max_age, min_bmi, max_bmi = emotion_variability(df, patient_dataframe,
-                                                                                             min_sufficiency,
-                                                                                             sliding_window, start_date,
-                                                                                             end_date)
+            df, min_date, max_date, min_age, max_age, min_bmi, max_bmi, no_rows = emotion_variability(df,
+                                                                                                      patient_dataframe,
+                                                                                                      patient_original,
+                                                                                                      min_sufficiency,
+                                                                                                      sliding_window,
+                                                                                                      start_date,
+                                                                                                      end_date)
         elif ehi_value == "cadphr-emotioninstability":
-            df, min_date, max_date, min_age, max_age, min_bmi, max_bmi = emotion_instability(df, patient_dataframe,
-                                                                                             min_sufficiency,
-                                                                                             sliding_window, start_date,
-                                                                                             end_date)
-
+            df, min_date, max_date, min_age, max_age, min_bmi, max_bmi, no_rows = emotion_instability(df,
+                                                                                                      patient_dataframe,
+                                                                                                      patient_original,
+                                                                                                      min_sufficiency,
+                                                                                                      sliding_window,
+                                                                                                      start_date,
+                                                                                                      end_date)
         num_rows = len(df)
         num_first_segment = int(num_rows * 0.3333)
         num_second_segment = int(num_rows * 0.3333)
@@ -973,41 +1098,49 @@ def process(df, activity_code, patient_dataframe, start_date, end_date, sliding_
         np.random.shuffle(all_values)
         df['GAD7'] = all_values
         df['GAD7'] = df['GAD7'].astype(int)
-
         if ehi_value == "cadphr-emotioninertia":
             df['emotioninertia_grades'] = df.apply(emotioninertia_grading, axis=1)
             df['inertia_latest_grade'] = df['emotioninertia_grades'].apply(get_latest_grade)
+            df.rename(columns={'emotioninertia': 'Rolling AVG'}, inplace=True)
         elif ehi_value == "cadphr-emotionvariability":
-            df['emotionvariability_grades'] = df['emotionvariability'].apply(emotionvariability_grading)
+            df['emotionvariability_grades'] = df['variability'].apply(emotionvariability_grading)
             df['variability_latest_grade'] = df['emotionvariability_grades'].apply(get_latest_grade)
+            df.rename(columns={'variability': 'Rolling AVG'}, inplace=True)
         elif ehi_value == "cadphr-emotioninstability":
             df['emotioninstability_grades'] = df['emotioninstability'].apply(emotioninstability_grading)
             df['instability_latest_grade'] = df['emotioninstability_grades'].apply(get_latest_grade)
-        return df, min_date, max_date, min_age, max_age, min_bmi, max_bmi
+            df.rename(columns={'emotioninstability': 'Rolling AVG'}, inplace=True)
+        return df, min_date, max_date, min_age, max_age, min_bmi, max_bmi, no_rows
 
     elif ehi_value == 'cadphr-pss4':
-        df_ps, min_date, max_date, min_age, max_age, min_bmi, max_bmi = extract_pss(df, patient_dataframe)
+        df_ps, min_date, max_date, min_age, max_age, min_bmi, max_bmi, no_rows = extract_pss(df, patient_dataframe,
+                                                                                             patient_original, )
         df_ps['cadphr-pss4_grade'] = df_ps.apply(perceived_stress_grading, axis=1)
-        return df_ps, min_date, max_date, min_age, max_age, min_bmi, max_bmi
+        return df_ps, min_date, max_date, min_age, max_age, min_bmi, max_bmi, no_rows
 
     elif ehi_value == 'cadphr-sira':
-        df_si, min_date, max_date, min_age, max_age, min_bmi, max_bmi = extract_stress_index(df, patient_dataframe)
-        return df_si, min_date, max_date, min_age, max_age, min_bmi, max_bmi
+        df_si, min_date, max_date, min_age, max_age, min_bmi, max_bmi, no_rows = extract_stress_index(df,
+                                                                                                      patient_dataframe,
+                                                                                                      patient_original)
+        return df_si, min_date, max_date, min_age, max_age, min_bmi, max_bmi, no_rows
 
     else:
         targetHR_flag = 0
         if ehi_value == 'cadphr-targetHR':
             targetHR_flag = 1
             ehi_value = 'cadphr-heartrate'
-        df_roll, min_date, max_date, min_age, max_age, min_bmi, max_bmi = extract_ehi_columns(df, patient_dataframe,
-                                                                                              activity_code, start_date,
-                                                                                              end_date,
-                                                                                              day_condition,
-                                                                                              sliding_window)
+        df_roll, min_date, max_date, min_age, max_age, min_bmi, max_bmi, no_rows = extract_ehi_columns(df, ehi_value,
+                                                                                                       patient_dataframe,
+                                                                                                       patient_original,
+                                                                                                       activity_code,
+                                                                                                       start_date,
+                                                                                                       end_date,
+                                                                                                       day_condition,
+                                                                                                       sliding_window)
         if ehi_value == 'cadphr-na':
             df_roll = df_roll.rename(columns={'Latest': 'NA'})
             df_roll = na_grading(df_roll)
-            return df_roll, min_date, max_date, min_age, max_age, min_bmi, max_bmi
+            return df_roll, min_date, max_date, min_age, max_age, min_bmi, max_bmi, no_rows
 
         df_grade = add_grade_column(df_roll, ehi_value)
         if targetHR_flag == 1:
@@ -1016,4 +1149,4 @@ def process(df, activity_code, patient_dataframe, start_date, end_date, sliding_
             df_grade['target_hr_lower'] = df_grade['HRR'] * 0.4 + df_grade['Latest']
             df_grade['target_hr_upper'] = df_grade['HRR'] * 0.6 + df_grade['Latest']
             df_grade['Highest HR of User'] = df_grade['Rolling AVG'].apply(lambda x: max(x) if x else None)
-        return df_grade, min_date, max_date, min_age, max_age, min_bmi, max_bmi
+        return df_grade, min_date, max_date, min_age, max_age, min_bmi, max_bmi, no_rows

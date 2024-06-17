@@ -176,6 +176,7 @@ def calculate_bsa(df):
 
 
 def cardiac_index(sbp_dataframe, dbp_dataframe, heartrate_dataframe, patient_df, height_df, weight_df, k_const, gender, start_age, end_age, start_date, end_date):
+    no_rows = 0
     sbp_dbp_code = "85354-9"
     heartrate_code = "40443-4"
     sbp_dataframe, min_date, max_date = sbp_dbp_reading_cardiac(sbp_dataframe, ehi_value='cadphr-sbp',
@@ -207,8 +208,13 @@ def cardiac_index(sbp_dataframe, dbp_dataframe, heartrate_dataframe, patient_df,
     df_final['CO_EST'] = (df_final['PP'] * df_final['HR']) / (df_final['SBP'] + df_final['DBP'])
     df_final['CO_EST_ADJ'] = df_final['CO_EST'] * k_const
     df_patient = extract_patient_info(patient_df, gender)
+    df_patient_original = df_patient
     df_patient = age_range(df_patient, start_age, end_age)
+    df_final_copy = df_final
     df_final = pd.merge(df_patient, df_final, on='subject_reference')
+    if df_final.shape[0] == 0:
+        no_rows = 1
+        df_final = pd.merge(df_patient_original, df_final_copy, on='subject_reference')
     df_height = extract_height(height_df)
     df_height = df_height.rename(columns={'obs': 'height_cm'})
     df_weight = extract_weight(weight_df)
@@ -220,4 +226,4 @@ def cardiac_index(sbp_dataframe, dbp_dataframe, heartrate_dataframe, patient_df,
     min_bsa, max_bsa = min(df_final['BSA']), max(df_final['BSA'])
     df_final['CI_DuBoisFormula'] = df_final['CO_EST_ADJ'] / df_final['BSA']
     df_final['CPI'] = df_final['MAP'] * (df_final['CI_DuBoisFormula'] / 451)
-    return df_final, min_date, max_date, min_age, max_age, min_bsa, max_bsa
+    return df_final, min_date, max_date, min_age, max_age, min_bsa, max_bsa, no_rows

@@ -41,6 +41,13 @@
         {% endif %}
     </td>
 </tr>
+        <tr>
+        <th colspan="2" style="text-align: left; color: red;">
+            {% if cohort_warn %}
+                Alert: {{ cohort_warn }}
+            {% endif %}
+        </th>
+    </tr>
 <tr>
     <th style="text-align: left;">Age Range:</th>
     <td id="age_range" style="text-align: left;">
@@ -54,7 +61,14 @@
 </tr>
 <tr>
     <th style="text-align: left;">BMI Range:</th>
-    <td id="bmi_range" style="text-align: left;">{{ BMI_range }}</td>
+    <td id="bmi_range" style="text-align: left;">
+        {% if bmi_warn %}
+            {{ BMI_range }}
+            <span style="color: red;">{{ bmi_warn }}</span>
+        {% else %}
+            {{ BMI_range }}
+        {% endif %}
+    </td>
 </tr>
     </table>
     <br>

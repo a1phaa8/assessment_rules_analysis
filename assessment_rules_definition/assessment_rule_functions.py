@@ -4,13 +4,13 @@ def ruleset1_V2_1_Fitness_VO2max_Fatness_BMI_rule(row):
     if row['BMI'] >= 30:
         assessment = 'RF_(obese)_BMI>=30:tomato'
     elif 25 <= row['BMI'] < 30 and row['cadphr-vo2maxra_grade'] <= 2:
-        assessment = 'RF_(overweight+unfit)_25<BMI<30 VO2max<2:orange'
+        assessment = 'RF_(overweight+unfit)_25<=BMI<30 VO2max<=2:orange'
         KF_flag = 1
     elif row['BMI'] < 25 and row['cadphr-vo2maxra_grade'] <= 2:
-        assessment = 'RF_(normalweight+unfit)_BMI<25 VO2max<2:sandybrown'
+        assessment = 'RF_(normalweight+unfit)_BMI<25 VO2max<=2:sandybrown'
         KF_flag = 1
     elif 25 <= row['BMI'] < 30 and row['cadphr-vo2maxra_grade'] >= 3:
-        assessment = 'PF_(overweight+fit)_25<BMI<30 VO2max>3:lightgreen'
+        assessment = 'PF_(overweight+fit)_25<=BMI<30 VO2max>=3:lightgreen'
         KF_flag = 1
     elif row['BMI'] < 25 and row['cadphr-vo2maxra_grade'] >= 3:
         assessment = 'PF_(normalweight+fit)_BMI<25 VO2max>=3:green'
@@ -142,9 +142,9 @@ def ruleset4_V3_1_extreme_SBP_rule(row):
 
 def ruleset5_V3_1_progression_dbp_rule(row):
     if row['latest_tau'] >= 0.8 and row['latest_p_value'] < 0.05 and row['cadphr-dbp_grade'] <= 2 and row['DBP'] >= 95:
-        assessment = 'RF_DBP_grade <= 2 and DBP>=140; tau>=0.8:orange'
+        assessment = 'RF_DBP_grade <= 2 and DBP>=95; tau>=0.8:orange'
     elif row['latest_tau'] >= 0.8 and row['latest_p_value'] < 0.05 and row['cadphr-dbp_grade'] == 3:
-        assessment = 'RF_DBP_grade = 3 and DBP>=140; tau>=0.8:sandybrown'
+        assessment = 'RF_DBP_grade = 3; tau>=0.8:sandybrown'
     elif row['latest_tau'] >= 0.8 and row['latest_p_value'] < 0.05 and row['cadphr-dbp_grade'] == 4 and row['DBP'] >= 80:
         assessment = 'ICF:lightgrey'
     elif row['latest_tau'] <= -0.8 and row['latest_p_value'] < 0.05 and row['cadphr-dbp_grade'] in [5]:
@@ -189,7 +189,7 @@ def ruleset5_V3_1_progression_sbp_rule(row):
     if row['latest_tau'] >= 0.8 and row['latest_p_value'] < 0.05 and row['cadphr-sbp_grade'] <= 2 and row['SBP'] >= 140:
         assessment = 'RF_SBP_grade <= 2 and SBP>=140; tau>=0.8:orange'
     elif row['latest_tau'] >= 0.8 and row['latest_p_value'] < 0.05 and row['cadphr-sbp_grade'] == 3 and row['SBP'] >= 130:
-        assessment = 'RF_SBP_grade = 3 and SBP>=140; tau>=0.8:sandybrown'
+        assessment = 'RF_SBP_grade = 3 and SBP>=130; tau>=0.8:sandybrown'
     elif row['latest_tau'] >= 0.8 and row['latest_p_value'] < 0.05 and row['cadphr-sbp_grade'] == 4 and row['SBP'] >= 120:
         assessment = 'ICF:lightgrey'
     elif row['latest_tau'] <= -0.8 and row['latest_p_value'] < 0.05 and row['cadphr-sbp_grade'] == 5:
