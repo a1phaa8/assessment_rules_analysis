@@ -111,7 +111,6 @@ def extract_ehi_computedValue(df, ehi_val, filtered_patient_data, all_patient_da
     max_age = max(df_result['age'])
     min_bmi = min(df_result['BMI'])
     max_bmi = max(df_result['BMI'])
-    print("No rows:", no_rows)
     return df_result, date_min, date_max, min_age, max_age, min_bmi, max_bmi, no_rows
 
 

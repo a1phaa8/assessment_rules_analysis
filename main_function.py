@@ -144,7 +144,6 @@ def assessment_rules_function(criteria_name, age_lower_bound, age_upper_bound, b
                                                                        end_d, gender, dataframe[1])
             else:
                 print("Key Finding doesn't exist for", rule_name)
-            print("New statement descriptive")
             # print(assessment_unique_description(dataframe, rule_name)["unique_rules"])
             descriptive_unique_rule = assessment_unique_description(dataframe[0], rule_name, dataframe[1])
             descriptive_grouped_rule = assessment_grouped_description(dataframe[0], rule_name, dataframe[1])
