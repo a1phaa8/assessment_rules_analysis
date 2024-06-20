@@ -8,6 +8,7 @@ from data_processing import return_required_dataframes as rd
 matplotlib.use('Agg')
 warnings.filterwarnings("ignore")
 
+
 def assessment_rule_unique_criteria_bar(df, rule_name, start_age, end_age, start_d, end_d, data_cond, no_rows_check):
     s = df['assessment'].explode()
     s = s[s != ""]
@@ -21,7 +22,7 @@ def assessment_rule_unique_criteria_bar(df, rule_name, start_age, end_age, start
     # # Define colors based on assessment rule prefixes and suffixes
     # colors = ['tomato' if label.startswith('RF') else 'green' if label.startswith('PF') else '#808000' if label.startswith('ICF') else None for label in assessment_counts.index]
 
-    colors=[]
+    colors = []
     # Extract colors from suffixes and update the colors list
     for i, label in enumerate(assessment_counts.index):
         prefix, color = label.split(":")
@@ -67,11 +68,13 @@ def assessment_rule_unique_criteria_bar(df, rule_name, start_age, end_age, start
     plt.gcf().set_size_inches(10, 6)
     # Save the plot
     filename = f"bar_graph_unique_factors_assessment.png"
-    static_folder = os.path.join(os.getcwd(), f'static/assessment_rules_graphs/{rule_name}') # Assumes 'static' is in the current working directory
+    static_folder = os.path.join(os.getcwd(),
+                                 f'static/assessment_rules_graphs/{rule_name}')  # Assumes 'static' is in the current working directory
     file_path = os.path.join(static_folder, filename)
     plt.savefig(file_path)
     plt.close()
     return filename
+
 
 def assessment_rule_grouped_criteria_bar(df, rule_name, start_age, end_age, start_d, end_d, data_cond, no_rows_check):
     s = df['assessment'].explode()
@@ -123,12 +126,14 @@ def assessment_rule_grouped_criteria_bar(df, rule_name, start_age, end_age, star
     plt.gcf().set_size_inches(10, 6)
     # Save the plot
     filename = f"bar_graph_grouped_factors_{'assessment'}.png"
-    static_folder = os.path.join(os.getcwd(), f'static/assessment_rules_graphs/{rule_name}')  # Assumes 'static' is in the current working directory
+    static_folder = os.path.join(os.getcwd(),
+                                 f'static/assessment_rules_graphs/{rule_name}')  # Assumes 'static' is in the current working directory
     file_path = os.path.join(static_folder, filename)
     plt.tight_layout()
     plt.savefig(file_path)
     plt.close()
     return filename
+
 
 def assessment_rule_KF_criteria_bar(df, rule_name, start_age, end_age, start_d, end_d, data_cond, no_rows_check):
     KF_column = 'KF_flag'
@@ -179,12 +184,14 @@ def assessment_rule_KF_criteria_bar(df, rule_name, start_age, end_age, start_d, 
     plt.gcf().set_size_inches(10, 6)
     # Save the plot
     filename = f"bar_graph_{KF_column}.png"
-    static_folder = os.path.join(os.getcwd(), f'static/assessment_rules_graphs/{rule_name}')  # Assumes 'static' is in the current working directory
+    static_folder = os.path.join(os.getcwd(),
+                                 f'static/assessment_rules_graphs/{rule_name}')  # Assumes 'static' is in the current working directory
     file_path = os.path.join(static_folder, filename)
     plt.tight_layout()
     plt.savefig(file_path)
     plt.close()
     return filename
+
 
 def assessment_rule_unique_KF_criteria_bar(df, rule_name, start_age, end_age, start_d, end_d, data_cond, no_rows_check):
     KF_column = 'KF_flag'
@@ -247,7 +254,8 @@ def assessment_rule_unique_KF_criteria_bar(df, rule_name, start_age, end_age, st
     return filename
 
 
-def assessment_rule_unique_criteria_pie_chart(df, rule_name, start_age, end_age, start_d, end_d, data_cond, no_rows_check):
+def assessment_rule_unique_criteria_pie_chart(df, rule_name, start_age, end_age, start_d, end_d, data_cond,
+                                              no_rows_check):
     s = df['assessment'].explode()
     s = s[s != ""]
     assessment_counts = s.value_counts().sort_index(ascending=False)
@@ -302,7 +310,8 @@ def assessment_rule_unique_criteria_pie_chart(df, rule_name, start_age, end_age,
     # Adjust figure size if needed (Set figure size to 10x6 inches)
     plt.gcf().set_size_inches(10, 6)
     filename = "pie_chart_unique_factors_assessment.png"
-    static_folder = os.path.join(os.getcwd(), f'static/assessment_rules_graphs/{rule_name}')  # Assumes 'static' is in the current working directory
+    static_folder = os.path.join(os.getcwd(),
+                                 f'static/assessment_rules_graphs/{rule_name}')  # Assumes 'static' is in the current working directory
     file_path = os.path.join(static_folder, filename)
     plt.tight_layout()
     plt.savefig(file_path)
@@ -310,7 +319,8 @@ def assessment_rule_unique_criteria_pie_chart(df, rule_name, start_age, end_age,
     return filename
 
 
-def assessment_rule_grouped_criteria_pie_chart(df, rule_name, start_age, end_age, start_d, end_d, data_cond, no_rows_check):
+def assessment_rule_grouped_criteria_pie_chart(df, rule_name, start_age, end_age, start_d, end_d, data_cond,
+                                               no_rows_check):
     s = df['assessment'].explode()
 
     # Count occurrences of RF, PF, and ICF strings
@@ -334,7 +344,8 @@ def assessment_rule_grouped_criteria_pie_chart(df, rule_name, start_age, end_age
         if count / sum(assessment_counts) * 100 < 5:
             explode = [0.15] * len(assessment_counts)  # Set explode to 0.15 if any count is less than 5%
             break
-    plt.pie(assessment_counts, explode=explode, labels=assessment_labels, autopct='%1.1f%%', startangle=140, colors=colors)
+    plt.pie(assessment_counts, explode=explode, labels=assessment_labels, autopct='%1.1f%%', startangle=140,
+            colors=colors)
     plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle
 
     # Title and formatting
@@ -368,7 +379,8 @@ def assessment_rule_grouped_criteria_pie_chart(df, rule_name, start_age, end_age
     plt.title("\n".join(wrap(title)))
     # Save and close plot
     filename = "pie_chart_grouped_factors_assessment.png"
-    static_folder = os.path.join(os.getcwd(), f'static/assessment_rules_graphs/{rule_name}')  # Assumes 'static' is in the current working directory
+    static_folder = os.path.join(os.getcwd(),
+                                 f'static/assessment_rules_graphs/{rule_name}')  # Assumes 'static' is in the current working directory
     file_path = os.path.join(static_folder, filename)
     # Adjust layout to prevent clipping
     plt.tight_layout()
@@ -425,7 +437,8 @@ def assessment_rule_KF_criteria_pie_chart(df, rule_name, start_age, end_age, sta
     # Adjust figure size if needed (Set figure size to 10x6 inches)
     plt.gcf().set_size_inches(10, 6)
     filename = "pie_chart_" + KF_column + ".png"
-    static_folder = os.path.join(os.getcwd(), f'static/assessment_rules_graphs/{rule_name}')  # Assumes 'static' is in the current working directory
+    static_folder = os.path.join(os.getcwd(),
+                                 f'static/assessment_rules_graphs/{rule_name}')  # Assumes 'static' is in the current working directory
     file_path = os.path.join(static_folder, filename)
     plt.savefig(file_path)
     plt.close()

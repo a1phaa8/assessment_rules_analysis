@@ -13,35 +13,35 @@ def index():
 
 @app.route('/result', methods=['POST'])
 def result():
-    rule_list = request.form.getlist("rule_selection[]")
-    if len(rule_list) == 0:
-        return render_template('index.html', error="Select at least 1 Rule.")
-    # rule_list = ["ruleset1_V2_1_Fitness_VO2max_Fatness_BMI_rule",
-    # "ruleset1_V2_1_Heart_Rate_Recovery_rule",
-    # "ruleset2_V2_1_cad_risk_assessment_rule",
-    # "ruleset2_V2_1_diabetes_risk_assessment_rule",
-    # "ruleset2_V2_1_osa_risk_assessment_rule",
-    # "ruleset3_V2_1_emotional_variability_rule",
-    # "ruleset4_V2_1_extreme_Heart_Rate_rule",
-    # "ruleset4_V2_1_extreme_Heart_Rate_Variability_rule",
-    # "ruleset4_V2_1_extreme_PRQ_rule",
-    # "ruleset4_V3_1_extreme_DBP_rule",
-    # "ruleset4_V3_1_extreme_SBP_rule",
-    # "ruleset5_V3_1_progression_dbp_rule",
-    # "ruleset5_V3_1_progression_hrv_rule",
-    # "ruleset5_V3_1_progression_rhr_rule",
-    # "ruleset5_V3_1_progression_sbp_rule",
-    # "ruleset6_V3_1_combinatorial_hr_hrv_rule",
-    # "ruleset6_V3_1_combinatorial_rules_SBP_DBP_rule",
-    # "ruleset1_V4_cardio_respiratory_fitness_rule",
-    # "ruleset2_V4_risk_clinical_risk_score_rule",
-    # "ruleset3_V4_emotional_influx_Stress_Disorder_rule",
-    # "ruleset3_V4_emotion_influx_anxiety_disorder_predictor_rule",
-    # "ruleset3_V4_emotion_influx_depression_early_symptom_rule",
-    # "ruleset5_V4_progression_resprate_rule",
-    # "ruleset5_V4_progression_prq_rule",
-    # "ruleset6_V4_combinatorial_rules_PulsePressure_SBP_rule",
-    # "ruleset6_V4_combinatorial_rules_target_HR_rule"]
+    # rule_list = request.form.getlist("rule_selection[]")
+    # if len(rule_list) == 0:
+    #     return render_template('index.html', error="Select at least 1 Rule.")
+    rule_list = ["ruleset1_V2_1_Fitness_VO2max_Fatness_BMI_rule",
+    "ruleset1_V2_1_Heart_Rate_Recovery_rule",
+    "ruleset2_V2_1_cad_risk_assessment_rule",
+    "ruleset2_V2_1_diabetes_risk_assessment_rule",
+    "ruleset2_V2_1_osa_risk_assessment_rule",
+    "ruleset3_V2_1_emotional_variability_rule",
+    "ruleset4_V2_1_extreme_Heart_Rate_rule",
+    "ruleset4_V2_1_extreme_Heart_Rate_Variability_rule",
+    "ruleset4_V2_1_extreme_PRQ_rule",
+    "ruleset4_V3_1_extreme_DBP_rule",
+    "ruleset4_V3_1_extreme_SBP_rule",
+    "ruleset5_V3_1_progression_dbp_rule",
+    "ruleset5_V3_1_progression_hrv_rule",
+    "ruleset5_V3_1_progression_rhr_rule",
+    "ruleset5_V3_1_progression_sbp_rule",
+    "ruleset6_V3_1_combinatorial_hr_hrv_rule",
+    "ruleset6_V3_1_combinatorial_rules_SBP_DBP_rule",
+    "ruleset1_V4_cardio_respiratory_fitness_rule",
+    "ruleset2_V4_risk_clinical_risk_score_rule",
+    "ruleset3_V4_emotional_influx_Stress_Disorder_rule",
+    "ruleset3_V4_emotion_influx_anxiety_disorder_predictor_rule",
+    "ruleset3_V4_emotion_influx_depression_early_symptom_rule",
+    "ruleset5_V4_progression_resprate_rule",
+    "ruleset5_V4_progression_prq_rule",
+    "ruleset6_V4_combinatorial_rules_PulsePressure_SBP_rule",
+    "ruleset6_V4_combinatorial_rules_target_HR_rule"]
     start_date = request.form["start_date"]
     end_date = request.form["end_date"]
     start_age = request.form["age_range_min"]
@@ -110,15 +110,16 @@ def result():
     # storing values returned in variables, values like
     # date range, age range, quantiles, statistics to be displayed visual or descriptive
     # and storing list of file_paths for pie chart and histogram
-    final_list, min_date, max_date, min_age, max_age, min_bmi, max_bmi, no_rows = main_func.assessment_rules_function(rule_list,
-                                                                                                             start_age,
-                                                                                                             end_age,
-                                                                                                             start_bmi,
-                                                                                                             end_bmi,
-                                                                                                             start_date,
-                                                                                                             end_date,
-                                                                                                             data_s,
-                                                                                                             result_representation)
+    final_list, min_date, max_date, min_age, max_age, min_bmi, max_bmi, no_rows = main_func.assessment_rules_function(
+        rule_list,
+        start_age,
+        end_age,
+        start_bmi,
+        end_bmi,
+        start_date,
+        end_date,
+        data_s,
+        result_representation)
     # converting values to required data types
     # Convert start_age, end_age to integers
     warn_age = ""

@@ -115,7 +115,8 @@ def assessment_rules_function(criteria_name, age_lower_bound, age_upper_bound, b
             unique_pie = assessment_rule_unique_criteria_pie_chart(dataframe[0], rule_name, age_lower_bound,
                                                                    age_upper_bound, start_d,
                                                                    end_d, gender, dataframe[1])
-            grouped_bar = assessment_rule_grouped_criteria_bar(dataframe[0], rule_name, age_lower_bound, age_upper_bound,
+            grouped_bar = assessment_rule_grouped_criteria_bar(dataframe[0], rule_name, age_lower_bound,
+                                                               age_upper_bound,
                                                                start_d,
                                                                end_d, gender, dataframe[1])
             grouped_pie = assessment_rule_grouped_criteria_pie_chart(dataframe[0], rule_name, age_lower_bound,
@@ -136,7 +137,8 @@ def assessment_rules_function(criteria_name, age_lower_bound, age_upper_bound, b
                                                          start_d,
                                                          end_d,
                                                          gender, dataframe[1])
-                KF_pie = assessment_rule_KF_criteria_pie_chart(dataframe[0], rule_name, age_lower_bound, age_upper_bound,
+                KF_pie = assessment_rule_KF_criteria_pie_chart(dataframe[0], rule_name, age_lower_bound,
+                                                               age_upper_bound,
                                                                start_d,
                                                                end_d, gender, dataframe[1])
                 unique_KF_bar = assessment_rule_unique_KF_criteria_bar(dataframe[0], rule_name, age_lower_bound,
@@ -167,7 +169,8 @@ def assessment_rules_function(criteria_name, age_lower_bound, age_upper_bound, b
             unique_bar = assessment_rule_unique_criteria_bar(dataframe[0], rule_name, age_lower_bound, age_upper_bound,
                                                              start_d,
                                                              end_d, gender, dataframe[1])
-            grouped_bar = assessment_rule_grouped_criteria_bar(dataframe[0], rule_name, age_lower_bound, age_upper_bound,
+            grouped_bar = assessment_rule_grouped_criteria_bar(dataframe[0], rule_name, age_lower_bound,
+                                                               age_upper_bound,
                                                                start_d,
                                                                end_d, gender, dataframe[1])
 
@@ -191,7 +194,8 @@ def assessment_rules_function(criteria_name, age_lower_bound, age_upper_bound, b
                                                          start_d,
                                                          end_d,
                                                          gender, dataframe[1])
-                KF_pie = assessment_rule_KF_criteria_pie_chart(dataframe[0], rule_name, age_lower_bound, age_upper_bound,
+                KF_pie = assessment_rule_KF_criteria_pie_chart(dataframe[0], rule_name, age_lower_bound,
+                                                               age_upper_bound,
                                                                "",
                                                                "", gender, dataframe[1])
                 unique_KF_bar = assessment_rule_unique_KF_criteria_bar(dataframe[0], rule_name, age_lower_bound,

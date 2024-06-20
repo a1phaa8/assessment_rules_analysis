@@ -17,8 +17,8 @@ def process_data(rule_names, start_age, end_age, start_date, end_date, BMI_lower
     df_height = pd.read_json('input/demographic_data/cadphr-bodyheight.json')
     # processing Patient dataframe considering all age and gender filters
     df_patient, all_user_data, no_rows_patient = get_demographic_data(user_data_file, df_weight, df_height, data_select,
-                                                              start_age, end_age,
-                                                              BMI_lower_limit, BMI_upper_limit)
+                                                                      start_age, end_age,
+                                                                      BMI_lower_limit, BMI_upper_limit)
 
     processed_dataframes, min_date, max_date = process_common_df(rule_names, df_patient, all_user_data, common_params,
                                                                  trend_window, data_select, start_age, end_age)

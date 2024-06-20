@@ -1,18 +1,27 @@
-{"rule_name_list":["ruleset1_V2_1_Fitness_VO2max_Fatness_BMI_rule"],
-  "start_age":"",
-  "end_age":"",
-  "gender":"male",
-  "start_Date":"",
-  "end_Date":"",
-  "BMI_start":"",
-  "BMI_end":"",
-  "sliding_window":3,
+{
+  "rule_name_list": [
+    "ruleset1_V2_1_Fitness_VO2max_Fatness_BMI_rule"
+  ],
+  "start_age": "",
+  "end_age": "",
+  "gender": "male",
+  "start_Date": "",
+  "end_Date": "",
+  "BMI_start": "",
+  "BMI_end": "",
+  "sliding_window": 3,
   "trend_window_size": 10,
-  "day_condition":"latest",
-  "min_sufficiency":3,
-  "max_sufficiency":30,
+  "day_condition": "latest",
+  "min_sufficiency": 3,
+  "max_sufficiency": 30,
   "User_data": "input/demographic_data/patient_new.json",
-  "cvreactivity_features": ["hr","sbp"],
-  "display_options": ["visual_stats", "descriptive_stats"],
+  "cvreactivity_features": [
+    "hr",
+    "sbp"
+  ],
+  "display_options": [
+    "visual_stats",
+    "descriptive_stats"
+  ],
   "k_constant": 0.0416
 }

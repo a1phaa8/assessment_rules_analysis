@@ -54,7 +54,8 @@ def process_common_df(rule_names, df_patient, cohort_all, common_params, trend_w
             if rule_name in ['ruleset6_V4_combinatorial_rules_PulsePressure_SBP_rule']:
                 # Merge SBP and DBP DataFrames
                 merged_dataframe = pd.merge(processed_sbp_df[
-                                                ['subject_reference', 'gender', 'age', 'height', 'weight', 'BMI', 'SBP_obs','SBP',
+                                                ['subject_reference', 'gender', 'age', 'height', 'weight', 'BMI',
+                                                 'SBP_obs', 'SBP',
                                                  'cadphr-sbp_grade']],
                                             processed_dbp_df[['subject_reference', 'DBP_obs', 'cadphr-dbp_grade']],
                                             on=['subject_reference'], how='inner')
@@ -72,7 +73,8 @@ def process_common_df(rule_names, df_patient, cohort_all, common_params, trend_w
                     *common_params,
                     'cadphr-pulsepressure'
                 )
-                processed_dataframes["pp_df"] = [processed_pulsepressure_dataframe, min_age, max_age, min_bmi, max_bmi, no_rows]
+                processed_dataframes["pp_df"] = [processed_pulsepressure_dataframe, min_age, max_age, min_bmi, max_bmi,
+                                                 no_rows]
             if rule_name in ['ruleset5_V3_1_progression_sbp_rule']:
                 df_sbp_prog = processed_dataframes['sbp_df'][0]
                 std_deviation = 'cadphr-sbp_std'
@@ -451,7 +453,8 @@ def process_common_df(rule_names, df_patient, cohort_all, common_params, trend_w
                 *common_params,
                 'cadphr-resprate'
             )
-            processed_rr_dataframe = processed_rr_dataframe[processed_rr_dataframe['obs'].apply(lambda x: len(x) >= 10)].reset_index(drop=True)
+            processed_rr_dataframe = processed_rr_dataframe[
+                processed_rr_dataframe['obs'].apply(lambda x: len(x) >= 10)].reset_index(drop=True)
             processed_rr_dataframe = processed_rr_dataframe.apply(
                 lambda x: extract_format_find_trend(x, trend_window), axis=1)
             processed_dataframes['resprate_progression_df'] = [processed_rr_dataframe, min_age, max_age, min_bmi,
@@ -547,7 +550,15 @@ def process_common_df(rule_names, df_patient, cohort_all, common_params, trend_w
             df_weight = pd.read_json('input/demographic_data/cadphr-bodyweight.json')
             df_height = pd.read_json('input/demographic_data/cadphr-bodyheight.json')
             df_patient = pd.read_json('input/demographic_data/patient_new.json')
-            df_final, min_date, max_date, min_age, max_age, min_bsa, max_bsa, no_rows = cardiac_index(bp_dataframe, bp_dataframe, hr_dataframe,
-                                                                         df_patient, df_height, df_weight, k_const, gender, s_age, e_age, common_params[0], common_params[1])
+            df_final, min_date, max_date, min_age, max_age, min_bsa, max_bsa, no_rows = cardiac_index(bp_dataframe,
+                                                                                                      bp_dataframe,
+                                                                                                      hr_dataframe,
+                                                                                                      df_patient,
+                                                                                                      df_height,
+                                                                                                      df_weight,
+                                                                                                      k_const, gender,
+                                                                                                      s_age, e_age,
+                                                                                                      common_params[0],
+                                                                                                      common_params[1])
             processed_dataframes['cpi_df'] = [df_final, min_age, max_age, min_bsa, max_bsa, no_rows]
     return processed_dataframes, min_date, max_date

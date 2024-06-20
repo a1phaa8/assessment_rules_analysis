@@ -145,7 +145,8 @@ def ruleset5_V3_1_progression_dbp_rule(row):
         assessment = 'RF_DBP_grade <= 2 and DBP>=95; tau>=0.8:orange'
     elif row['latest_tau'] >= 0.8 and row['latest_p_value'] < 0.05 and row['cadphr-dbp_grade'] == 3:
         assessment = 'RF_DBP_grade = 3; tau>=0.8:sandybrown'
-    elif row['latest_tau'] >= 0.8 and row['latest_p_value'] < 0.05 and row['cadphr-dbp_grade'] == 4 and row['DBP'] >= 80:
+    elif row['latest_tau'] >= 0.8 and row['latest_p_value'] < 0.05 and row['cadphr-dbp_grade'] == 4 and row[
+        'DBP'] >= 80:
         assessment = 'ICF:lightgrey'
     elif row['latest_tau'] <= -0.8 and row['latest_p_value'] < 0.05 and row['cadphr-dbp_grade'] in [5]:
         assessment = 'PF_DBP_grade is 5; tau<-0.8:limegreen'
@@ -188,9 +189,11 @@ def ruleset5_V3_1_progression_rhr_rule(row):
 def ruleset5_V3_1_progression_sbp_rule(row):
     if row['latest_tau'] >= 0.8 and row['latest_p_value'] < 0.05 and row['cadphr-sbp_grade'] <= 2 and row['SBP'] >= 140:
         assessment = 'RF_SBP_grade <= 2 and SBP>=140; tau>=0.8:orange'
-    elif row['latest_tau'] >= 0.8 and row['latest_p_value'] < 0.05 and row['cadphr-sbp_grade'] == 3 and row['SBP'] >= 130:
+    elif row['latest_tau'] >= 0.8 and row['latest_p_value'] < 0.05 and row['cadphr-sbp_grade'] == 3 and row[
+        'SBP'] >= 130:
         assessment = 'RF_SBP_grade = 3 and SBP>=130; tau>=0.8:sandybrown'
-    elif row['latest_tau'] >= 0.8 and row['latest_p_value'] < 0.05 and row['cadphr-sbp_grade'] == 4 and row['SBP'] >= 120:
+    elif row['latest_tau'] >= 0.8 and row['latest_p_value'] < 0.05 and row['cadphr-sbp_grade'] == 4 and row[
+        'SBP'] >= 120:
         assessment = 'ICF:lightgrey'
     elif row['latest_tau'] <= -0.8 and row['latest_p_value'] < 0.05 and row['cadphr-sbp_grade'] == 5:
         assessment = 'PF_SBP_grade is 5; tau<-0.8:limegreen'
@@ -207,7 +210,8 @@ def ruleset6_V3_1_combinatorial_hr_hrv_rule(row):
     if row['cadphr-heartrate_grade'] == '1' and row['cadphr-hrv_grade'] == 1:
         assessment = 'RF_HR_Grade=1 HRV_Grade=1:orange'
         KF_flag = 1
-    elif (row['cadphr-heartrate_grade'] == '4' or row['cadphr-heartrate_grade'] == '5') and row['cadphr-hrv_grade'] == 3:
+    elif (row['cadphr-heartrate_grade'] == '4' or row['cadphr-heartrate_grade'] == '5') and row[
+        'cadphr-hrv_grade'] == 3:
         assessment = 'PF_HR_Grade Protective HRV_Grade=3:limegreen'
         KF_flag = 1
     else:

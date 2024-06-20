@@ -175,7 +175,8 @@ def calculate_bsa(df):
     return df
 
 
-def cardiac_index(sbp_dataframe, dbp_dataframe, heartrate_dataframe, patient_df, height_df, weight_df, k_const, gender, start_age, end_age, start_date, end_date):
+def cardiac_index(sbp_dataframe, dbp_dataframe, heartrate_dataframe, patient_df, height_df, weight_df, k_const, gender,
+                  start_age, end_age, start_date, end_date):
     no_rows = 0
     sbp_dbp_code = "85354-9"
     heartrate_code = "40443-4"
